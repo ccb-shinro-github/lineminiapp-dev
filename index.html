@@ -22,7 +22,7 @@
   <div class="container">
     <div class="card">
       <button class="close-btn" aria-label="閉じる">✕</button>
-      <h2>予約フォーム ver4</h2>
+      <h2>予約フォーム ver5</h2>
       <form id="reserveForm">
         <label>氏名
           <input type="text" name="name" placeholder="山田 花子" required>
@@ -100,7 +100,7 @@
           throw new Error(`API エラー: ${response.status} - ${responseText}`);
         }
 
-        alert('予約が完了しました！\nAPI応答時間: ' + elapsed + '秒\n\n画面右上の×ボタンでこのページを閉じてください。');
+        alert('予約が完了しました！\nAPI応答時間: ' + elapsed + '秒:画面右上の×ボタンでこのページを閉じてください。');
       } catch(err){
         let errorMessage = '送信に失敗しました。\n\n';
         errorMessage += '[エラー名]\n' + (err.name || '') + '\n';

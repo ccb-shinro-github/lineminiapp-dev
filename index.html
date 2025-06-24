@@ -37,6 +37,33 @@
       0%   { transform: rotate(0deg);}
       100% { transform: rotate(360deg);}
     }
+    .complete-message {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    }
+    .complete-content {
+      background: #fff;
+      border-radius: 16px;
+      padding: 32px 24px;
+      text-align: center;
+      min-width: 260px;
+      max-width: 90vw;
+    }
+    .complete-title {
+      font-size: 1.5em;
+      font-weight: bold;
+      margin-bottom: 16px;
+    }
+    .complete-detail {
+      font-size: 1em;
+      margin-bottom: 8px;
+      color: #333;
+    }
   </style>
 </head>
 <body>
@@ -46,6 +73,13 @@
       <h2>予約フォーム ver5</h2>
       <div id="loadingSpinner" class="spinner-overlay" style="display:none;">
         <div class="spinner"></div>
+      </div>
+      <div id="completeMessage" class="complete-message" style="display:none;">
+        <div class="complete-content">
+          <div class="complete-title">予約が完了しました！</div>
+          <div id="completeDetail" class="complete-detail"></div>
+          <button id="completeOkBtn" class="submit-btn" style="margin-top:24px;">OK</button>
+        </div>
       </div>
       <form id="reserveForm">
         <label>氏名
@@ -84,6 +118,9 @@
     const form   = document.getElementById('reserveForm');
     const button = document.getElementById('submitBtn');
     const spinner = document.getElementById('loadingSpinner');
+    const completeMessage = document.getElementById('completeMessage');
+    const completeDetail = document.getElementById('completeDetail');
+    const completeOkBtn = document.getElementById('completeOkBtn');
     form.addEventListener('submit', async e => {
       e.preventDefault();
       button.disabled = true;
@@ -126,7 +163,8 @@
           throw new Error(`API エラー: ${response.status} - ${responseText}`);
         }
 
-        alert('予約が完了しました！\nAPI応答時間: ' + elapsed + '秒画面右上の×ボタンでこのページを閉じてください。');
+        completeDetail.textContent = 'API応答時間: ' + elapsed + '秒\n画面右上の×ボタンでこのページを閉じてください。';
+        completeMessage.style.display = 'flex';
       } catch(err){
         let errorMessage = '送信に失敗しました。\n\n';
         errorMessage += '[エラー名]\n' + (err.name || '') + '\n';
@@ -140,6 +178,9 @@
         button.disabled = false;
       }
       spinner.style.display = 'none'; // スピナー非表示
+    });
+    completeOkBtn.addEventListener('click', () => {
+      completeMessage.style.display = 'none';
     });
   </script>
 </body>

@@ -69,28 +69,40 @@
           grade  : form.grade.value,
           token  : token
         };
+
+        let debugLog = '';
+        debugLog += '[送信データ]\n' + JSON.stringify(body, null, 2) + '\n\n';
+
         const response = await fetch('http://homepc.gamebox777.work/api/miniapp-api/reservations', {
           method : 'POST',
           headers: { 'Content-Type': 'application/json' },
           body   : JSON.stringify(body)
         });
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`API エラー: ${response.status} - ${errorText}`);
+
+        debugLog += '[レスポンスステータス]\n' + response.status + '\n';
+
+        let responseText = '';
+        try {
+          responseText = await response.text();
+          debugLog += '[レスポンス内容]\n' + responseText + '\n';
+        } catch (e) {
+          debugLog += '[レスポンス内容取得エラー]\n' + e.message + '\n';
         }
+
+        if (!response.ok) {
+          throw new Error(`API エラー: ${response.status} - ${responseText}`);
+        }
+
         alert('予約が完了しました！');
-        // window.close(); // 必要なら有効化
       } catch(err){
         let errorMessage = '送信に失敗しました。\n\n';
-        if (err.name === 'TypeError' && err.message.includes('fetch')) {
-          errorMessage += 'ネットワークエラー: サーバーに接続できません。\n';
-          errorMessage += 'URL: http://homepc.gamebox777.work/api/miniapp-api/reservations\n';
-        } else if (err.message.includes('API エラー:')) {
-          errorMessage += err.message;
-        } else {
-          errorMessage += `エラー詳細: ${err.message}`;
+        errorMessage += '[エラー名]\n' + (err.name || '') + '\n';
+        errorMessage += '[エラーメッセージ]\n' + (err.message || '') + '\n';
+        errorMessage += '[エラースタック]\n' + (err.stack || '') + '\n\n';
+        if (typeof debugLog !== 'undefined') {
+          errorMessage += debugLog;
         }
-        errorMessage += '\n\n時間をおいて再度お試しください。';
+        errorMessage += '\n時間をおいて再度お試しください。';
         alert(errorMessage);
         button.disabled = false;
       }

@@ -16,6 +16,27 @@
     .submit-btn{margin-top:24px;width:100%;padding:14px 0;border:none;border-radius:8px;font-size:15px;font-weight:700;color:#fff;background:#00C300;cursor:pointer;transition:opacity .2s;}
     .submit-btn:disabled{opacity:.5;cursor:not-allowed;}
     .policy-link{display:block;margin-top:8px;font-size:12px;color:#0056ff;text-decoration:underline;}
+    .spinner-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .spinner {
+      border: 6px solid #eee;
+      border-top: 6px solid #00C300;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0%   { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
   </style>
 </head>
 <body>
@@ -23,6 +44,9 @@
     <div class="card">
       <button class="close-btn" aria-label="閉じる">✕</button>
       <h2>予約フォーム ver5</h2>
+      <div id="loadingSpinner" class="spinner-overlay" style="display:none;">
+        <div class="spinner"></div>
+      </div>
       <form id="reserveForm">
         <label>氏名
           <input type="text" name="name" placeholder="山田 花子" required>
@@ -59,9 +83,11 @@
     // フォーム送信
     const form   = document.getElementById('reserveForm');
     const button = document.getElementById('submitBtn');
+    const spinner = document.getElementById('loadingSpinner');
     form.addEventListener('submit', async e => {
       e.preventDefault();
       button.disabled = true;
+      spinner.style.display = 'flex'; // スピナー表示
       const startTime = Date.now();
       console.log('送信ボタン押下:', new Date(startTime).toISOString());
       try {
@@ -100,7 +126,7 @@
           throw new Error(`API エラー: ${response.status} - ${responseText}`);
         }
 
-        alert('予約が完了しました！\nAPI応答時間: ' + elapsed + '秒:画面右上の×ボタンでこのページを閉じてください。');
+        alert('予約が完了しました！\nAPI応答時間: ' + elapsed + '秒画面右上の×ボタンでこのページを閉じてください。');
       } catch(err){
         let errorMessage = '送信に失敗しました。\n\n';
         errorMessage += '[エラー名]\n' + (err.name || '') + '\n';
@@ -113,6 +139,7 @@
         alert(errorMessage);
         button.disabled = false;
       }
+      spinner.style.display = 'none'; // スピナー非表示
     });
   </script>
 </body>

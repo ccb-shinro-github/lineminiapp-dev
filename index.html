@@ -68,8 +68,14 @@
     const LIFF_ID = "2007443650-YmaLMDkp";
 
     (async () => {
-      await liff.init({ liffId: LIFF_ID });
-    })().catch(console.error);
+      try {
+        await liff.init({ liffId: LIFF_ID });
+        console.log('LIFF初期化成功');
+      } catch (error) {
+        console.error('LIFF初期化エラー:', error);
+        alert(`LIFF初期化エラー: ${error.message}\n\nLIFF ID: ${LIFF_ID}`);
+      }
+    })();
 
     // --- フォーム送信 ---
     const form   = document.getElementById('reserveForm');
@@ -88,18 +94,47 @@
           grade  : form.grade.value
         };
 
+        console.log('送信データ:', body);
+
         /* 実際には自分のバックエンド URL に POST する */
-        await fetch('http://homepc.gamebox777.work/api/miniapp-api/reservations', {
+        const response = await fetch('http://homepc.gamebox777.work/api/miniapp-api/reservations', {
           method : 'POST',
           headers: { 'Content-Type': 'application/json' },
           body   : JSON.stringify(body)
         });
 
+        console.log('レスポンスステータス:', response.status);
+        console.log('レスポンスヘッダー:', response.headers);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('API エラー:', errorText);
+          throw new Error(`API エラー: ${response.status} - ${errorText}`);
+        }
+
+        const result = await response.json();
+        console.log('成功レスポンス:', result);
+
         alert('予約が完了しました！');
         liff.closeWindow();                                      // LINE 画面へ戻る
       } catch(err){
-        console.error(err);
-        alert('送信に失敗しました。時間をおいて再度お試しください。');
+        console.error('詳細エラー:', err);
+        
+        // エラーメッセージを詳細に表示
+        let errorMessage = '送信に失敗しました。\n\n';
+        
+        if (err.name === 'TypeError' && err.message.includes('fetch')) {
+          errorMessage += 'ネットワークエラー: サーバーに接続できません。\n';
+          errorMessage += 'URL: http://homepc.gamebox777.work/api/miniapp-api/reservations\n';
+        } else if (err.message.includes('API エラー:')) {
+          errorMessage += err.message;
+        } else {
+          errorMessage += `エラー詳細: ${err.message}`;
+        }
+        
+        errorMessage += '\n\n時間をおいて再度お試しください。';
+        
+        alert(errorMessage);
         button.disabled = false;
       }
     });

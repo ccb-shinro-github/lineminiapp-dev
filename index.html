@@ -100,8 +100,7 @@
           throw new Error(`API エラー: ${response.status} - ${responseText}`);
         }
 
-        alert('予約が完了しました！\nAPI応答時間: ' + elapsed + '秒');
-        window.close();
+        alert('予約が完了しました！\nAPI応答時間: ' + elapsed + '秒\n\n画面右上の×ボタンでこのページを閉じてください。');
       } catch(err){
         let errorMessage = '送信に失敗しました。\n\n';
         errorMessage += '[エラー名]\n' + (err.name || '') + '\n';

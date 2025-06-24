@@ -71,6 +71,13 @@
       try {
         await liff.init({ liffId: LIFF_ID });
         console.log('LIFF初期化成功');
+
+        // LINEアプリ内か判定
+        if (!liff.isInClient()) {
+          alert('このミニアプリはLINEアプリ内でご利用ください。\nLINEアプリで開き直してください。');
+          // フォームを無効化
+          document.getElementById('reserveForm').querySelectorAll('input, select, button').forEach(el => el.disabled = true);
+        }
       } catch (error) {
         console.error('LIFF初期化エラー:', error);
         await sendErrorLog(error, 'LIFF初期化');

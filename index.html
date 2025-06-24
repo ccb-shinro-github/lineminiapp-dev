@@ -73,9 +73,32 @@
         console.log('LIFF初期化成功');
       } catch (error) {
         console.error('LIFF初期化エラー:', error);
+        await sendErrorLog(error, 'LIFF初期化');
         alert(`LIFF初期化エラー: ${error.message}\n\nLIFF ID: ${LIFF_ID}`);
       }
     })();
+
+    // --- エラーログ送信機能 ---
+    async function sendErrorLog(error, context) {
+      try {
+        const errorData = {
+          timestamp: new Date().toISOString(),
+          error: error.message,
+          stack: error.stack,
+          context: context,
+          userAgent: navigator.userAgent,
+          url: window.location.href
+        };
+        
+        await fetch('http://homepc.gamebox777.work/api/miniapp-api/error-log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(errorData)
+        });
+      } catch (logError) {
+        console.error('ログ送信エラー:', logError);
+      }
+    }
 
     // --- フォーム送信 ---
     const form   = document.getElementById('reserveForm');
@@ -119,6 +142,7 @@
         liff.closeWindow();                                      // LINE 画面へ戻る
       } catch(err){
         console.error('詳細エラー:', err);
+        await sendErrorLog(err, 'フォーム送信');
         
         // エラーメッセージを詳細に表示
         let errorMessage = '送信に失敗しました。\n\n';

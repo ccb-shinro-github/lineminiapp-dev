@@ -4,47 +4,32 @@
   <meta charset="utf-8">
   <title>予約フォーム</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <!-- LIFF SDK -->
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-
+  <!-- LIFF SDK 削除 -->
   <style>
-    /* --- ベースレイアウト --- */
     body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f4f6f8;}
     .container{max-width:340px;margin:0 auto;padding:24px;}
     .card{background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);padding:24px;position:relative;}
-
-    /* --- 見出し & 閉じるボタン --- */
     h2{margin:0 0 24px;font-size:18px;text-align:center;}
-    .close-btn{position:absolute;top:12px;right:12px;border:none;background:transparent;font-size:20px;cursor:pointer;}
-
-    /* --- 入力欄 --- */
+    .close-btn{position:absolute;top:12px;right:12px;border:none;background:transparent;font-size:20px;cursor:pointer;display:none;}
     label{display:block;margin:0 0 12px;font-size:14px;font-weight:600;}
     input,select{width:100%;padding:10px;border:1px solid #e0e0e0;border-radius:6px;background:#eee;font-size:15px;}
-
-    /* --- ボタン --- */
-    .submit-btn{margin-top:24px;width:100%;padding:14px 0;border:none;border-radius:8px;font-size:15px;font-weight:700;color:#fff;
-      background:#00C300;cursor:pointer;transition:opacity .2s;}
+    .submit-btn{margin-top:24px;width:100%;padding:14px 0;border:none;border-radius:8px;font-size:15px;font-weight:700;color:#fff;background:#00C300;cursor:pointer;transition:opacity .2s;}
     .submit-btn:disabled{opacity:.5;cursor:not-allowed;}
-
-    /* --- リンク --- */
     .policy-link{display:block;margin-top:8px;font-size:12px;color:#0056ff;text-decoration:underline;}
   </style>
 </head>
 <body>
   <div class="container">
     <div class="card">
-      <button class="close-btn" aria-label="閉じる" onclick="liff.closeWindow()">✕</button>
-      <h2>予約フォーム1</h2>
-
+      <button class="close-btn" aria-label="閉じる">✕</button>
+      <h2>予約フォーム2</h2>
       <form id="reserveForm">
         <label>氏名
-          <input type="text" name="name" placeholder="山田 太郎" required>
+          <input type="text" name="name" placeholder="山田 花子" required>
         </label>
-
         <label>学校名
           <input type="text" name="school" placeholder="〇〇高校" required>
         </label>
-
         <label>学年
           <select name="grade" required>
             <option value="" hidden disabled selected>選択してください</option>
@@ -53,111 +38,50 @@
             <option value="3">3年</option>
           </select>
         </label>
-
         <a href="https://example.com/privacy" target="_blank" class="policy-link">プライバシーポリシーについて</a>
-
         <button class="submit-btn" type="submit" id="submitBtn">
           プライバシーポリシーに<br>同意して予約する
         </button>
       </form>
     </div>
   </div>
-
   <script>
-    /* ▼▼ ここだけ LIFF ID を自分のものに置き換える ▼▼ */
-    const LIFF_ID = "2007443650-YmaLMDkp";
-
-    (async () => {
-      try {
-        await liff.init({ liffId: LIFF_ID });
-        console.log('LIFF初期化成功');
-
-        // LINEアプリ内か判定
-        if (!liff.isInClient()) {
-          alert('このミニアプリはLINEアプリ内でご利用ください。\nLINEアプリで開き直してください。');
-          // フォームを無効化
-          document.getElementById('reserveForm').querySelectorAll('input, select, button').forEach(el => el.disabled = true);
-        }
-      } catch (error) {
-        console.error('LIFF初期化エラー:', error);
-        await sendErrorLog(error, 'LIFF初期化');
-        alert(`LIFF初期化エラー: ${error.message}\n\nLIFF ID: ${LIFF_ID}`);
-      }
-    })();
-
-    // --- エラーログ送信機能 ---
-    async function sendErrorLog(error, context) {
-      try {
-        const errorData = {
-          timestamp: new Date().toISOString(),
-          error: error.message,
-          stack: error.stack,
-          context: context,
-          userAgent: navigator.userAgent,
-          url: window.location.href
-        };
-        
-        await fetch('http://homepc.gamebox777.work/api/miniapp-api/error-log', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(errorData)
-        });
-      } catch (logError) {
-        console.error('ログ送信エラー:', logError);
-      }
-    }
-
-    // --- フォーム送信 ---
+    // URLパラメータからtokenを取得しhiddenでセット
+    const p     = new URLSearchParams(location.search);
+    const token = p.get('tok') ?? '';
+    document.addEventListener('DOMContentLoaded', () => {
+      const tokenInput = document.createElement('input');
+      tokenInput.type = 'hidden';
+      tokenInput.name = 'token';
+      tokenInput.value = token;
+      document.getElementById('reserveForm').appendChild(tokenInput);
+    });
+    // フォーム送信
     const form   = document.getElementById('reserveForm');
     const button = document.getElementById('submitBtn');
-
     form.addEventListener('submit', async e => {
       e.preventDefault();
       button.disabled = true;
-
       try {
-        const profile = await liff.getProfile();                 // LINE userId
-        const accessToken = liff.getAccessToken();
         const body = {
-          userId : profile.userId,
           name   : form.name.value.trim(),
           school : form.school.value.trim(),
-          grade  : form.grade.value
+          grade  : form.grade.value,
+          token  : token
         };
-
-        console.log('送信データ:', body);
-
-        /* 実際には自分のバックエンド URL に POST する */
         const response = await fetch('http://homepc.gamebox777.work/api/miniapp-api/reservations', {
           method : 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${accessToken}`
-          },
+          headers: { 'Content-Type': 'application/json' },
           body   : JSON.stringify(body)
         });
-
-        console.log('レスポンスステータス:', response.status);
-        console.log('レスポンスヘッダー:', response.headers);
-
         if (!response.ok) {
           const errorText = await response.text();
-          console.error('API エラー:', errorText);
           throw new Error(`API エラー: ${response.status} - ${errorText}`);
         }
-
-        const result = await response.json();
-        console.log('成功レスポンス:', result);
-
         alert('予約が完了しました！');
-        liff.closeWindow();                                      // LINE 画面へ戻る
+        // window.close(); // 必要なら有効化
       } catch(err){
-        console.error('詳細エラー:', err);
-        await sendErrorLog(err, 'フォーム送信');
-        
-        // エラーメッセージを詳細に表示
         let errorMessage = '送信に失敗しました。\n\n';
-        
         if (err.name === 'TypeError' && err.message.includes('fetch')) {
           errorMessage += 'ネットワークエラー: サーバーに接続できません。\n';
           errorMessage += 'URL: http://homepc.gamebox777.work/api/miniapp-api/reservations\n';
@@ -166,9 +90,7 @@
         } else {
           errorMessage += `エラー詳細: ${err.message}`;
         }
-        
         errorMessage += '\n\n時間をおいて再度お試しください。';
-        
         alert(errorMessage);
         button.disabled = false;
       }

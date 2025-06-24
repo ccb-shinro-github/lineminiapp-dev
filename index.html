@@ -73,7 +73,7 @@
         let debugLog = '';
         debugLog += '[送信データ]\n' + JSON.stringify(body, null, 2) + '\n\n';
 
-        const response = await fetch('http://homepc.gamebox777.work/api/miniapp-api/reservations', {
+        const response = await fetch('https://homepc.gamebox777.work/api/miniapp-api/reservations', {
           method : 'POST',
           headers: { 'Content-Type': 'application/json' },
           body   : JSON.stringify(body)

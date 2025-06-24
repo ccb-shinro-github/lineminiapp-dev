@@ -22,7 +22,7 @@
   <div class="container">
     <div class="card">
       <button class="close-btn" aria-label="閉じる">✕</button>
-      <h2>予約フォーム3</h2>
+      <h2>予約フォーム ver4</h2>
       <form id="reserveForm">
         <label>氏名
           <input type="text" name="name" placeholder="山田 花子" required>
@@ -94,6 +94,7 @@
         }
 
         alert('予約が完了しました！');
+        window.close();
       } catch(err){
         let errorMessage = '送信に失敗しました。\n\n';
         errorMessage += '[エラー名]\n' + (err.name || '') + '\n';

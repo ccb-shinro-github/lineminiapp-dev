@@ -56,7 +56,29 @@ origin  https://github.com/ccb-shinro-github/lineminiapp-dev.git (push)
 - **デフォルトブランチ**: main
 
 ### GitHub Pages
-このリポジトリは GitHub Pages での公開が可能です（`.nojekyll` ファイルにより）。
+このリポジトリは GitHub Pages で公開されています。
+
+#### サイト情報
+- **公開URL**: https://ccb-shinro-github.github.io/lineminiapp-dev/
+- **デプロイソース**: `main` ブランチ
+- **最終デプロイ**: @gamebox777 により5分前
+- **ビルド方式**: pages build and deployment workflow
+
+#### 設定詳細
+- **HTTPSの強制**: 有効（デフォルトドメイン使用のため必須）
+- **カスタムドメイン**: 設定可能（現在は未設定）
+- **Jekyll処理**: 無効（`.nojekyll` ファイルにより）
+
+#### アクセス方法
+本番環境には以下のURLでアクセスできます：
+```
+https://ccb-shinro-github.github.io/lineminiapp-dev/
+```
+
+#### 注意事項
+- `main` ブランチにプッシュすると自動的にサイトが更新されます
+- HTTPSが強制されているため、セキュアな通信が保証されます
+- `.nojekyll` ファイルにより、`index.html` がそのまま配信されます
 
 ## 開発メモ
 - URLは定数化済み（変更が必要な場合は `API_ENDPOINT` を修正）

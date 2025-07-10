@@ -42,6 +42,22 @@ GitHub Pagesでサイトを公開する際に、Jekyll処理をスキップす�
 
 このファイルがあることで、`index.html`が直接GitHub Pagesで配信されます。
 
+## リポジトリ情報
+
+### Gitリモートリポジトリ
+```bash
+origin  https://github.com/ccb-shinro-github/lineminiapp-dev.git (fetch)
+origin  https://github.com/ccb-shinro-github/lineminiapp-dev.git (push)
+```
+
+- **リポジトリURL**: https://github.com/ccb-shinro-github/lineminiapp-dev.git
+- **組織/ユーザー**: ccb-shinro-github
+- **リポジトリ名**: lineminiapp-dev
+- **デフォルトブランチ**: main
+
+### GitHub Pages
+このリポジトリは GitHub Pages での公開が可能です（`.nojekyll` ファイルにより）。
+
 ## 開発メモ
 - URLは定数化済み（変更が必要な場合は `API_ENDPOINT` を修正）
 - バージョン: ver6

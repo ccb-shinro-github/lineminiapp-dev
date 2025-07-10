@@ -121,19 +121,39 @@
     // LIFF設定
     const LIFF_ID = '2007366489-ZaL835MB'; // 入力フォーム (Full)
     const ENABLE_TEST_MODE = false; // 本番用設定
+    
+    // LIFF初期化状態管理
+    let liffReady = false;
 
     // LIFF初期化
-    document.addEventListener('DOMContentLoaded', async () => {
+    async function initializeLiff() {
       try {
-        if (LIFF_ID !== 'YOUR_LIFF_ID') {
-          await liff.init({ liffId: LIFF_ID });
-          console.log('LIFF初期化完了');
-        } else {
-          console.log('⚠️ LIFF IDが設定されていません。LIFF_ID変数を設定してください。');
+        await liff.init({ liffId: LIFF_ID });
+        liffReady = true;
+        console.log('LIFF初期化完了');
+        
+        // 初期化完了後にボタンを有効化
+        const submitBtn = document.getElementById('submitBtn');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'プライバシーポリシーに\n同意して予約する';
         }
       } catch (error) {
         console.log('LIFF初期化エラー:', error);
+        liffReady = false;
       }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // 初期状態ではボタンを無効化
+      const submitBtn = document.getElementById('submitBtn');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'LIFF初期化中...<br>お待ちください';
+      }
+      
+      // LIFF初期化を実行
+      initializeLiff();
     });
     
     // URLパラメータからtokenを取得しhiddenでセット
@@ -201,11 +221,12 @@
         // LINEトーク画面にメッセージを送信
         console.log('LIFF状態チェック:');
         console.log('- liff定義済み:', typeof liff !== 'undefined');
-        console.log('- LIFF初期化済み:', typeof liff !== 'undefined' && liff.isReady && liff.isReady());
-        console.log('- LINEクライアント内:', typeof liff !== 'undefined' && liff.isInClient && liff.isInClient());
+        console.log('- liffReady フラグ:', liffReady);
+        console.log('- LIFF初期化済み:', liffReady && liff.isReady && liff.isReady());
+        console.log('- LINEクライアント内:', liffReady && liff.isInClient && liff.isInClient());
         
         try {
-          if (typeof liff !== 'undefined' && liff.isReady && liff.isReady()) {
+          if (liffReady && liff.isReady && liff.isReady()) {
             if (liff.isInClient()) {
               console.log('メッセージ送信開始...');
               await liff.sendMessages([
@@ -218,22 +239,11 @@
               completeDetail.textContent = 'API応答時間: ' + elapsed + '秒\nトーク画面にメッセージを送信しました。アプリを自動で閉じます...';
             } else {
               console.log('LINEクライアント外環境です');
-              if (ENABLE_TEST_MODE) {
-                console.log('テストモード: メッセージ送信を試行します');
-                await liff.sendMessages([
-                  {
-                    type: 'text',
-                    text: `🎉 予約が完了しました！\n\n📝 予約内容\n・氏名: ${body.name}\n・学校名: ${body.school}\n・学年: ${body.grade}年\n\n⏱️ API応答時間: ${elapsed}秒\n\nありがとうございました！`
-                  }
-                ]);
-                completeDetail.textContent = 'API応答時間: ' + elapsed + '秒\n[テストモード] メッセージ送信を試行しました。';
-              } else {
-                completeDetail.textContent = 'API応答時間: ' + elapsed + '秒\n予約が完了しました。（LINEクライアント外のため、メッセージ送信なし）';
-              }
+              completeDetail.textContent = 'API応答時間: ' + elapsed + '秒\n予約が完了しました。（LINEクライアント外環境）';
             }
           } else {
-            console.log('LIFF未初期化またはSDK未読み込み');
-            completeDetail.textContent = 'API応答時間: ' + elapsed + '秒\n予約が完了しました。（LIFF未初期化）';
+            console.log('LIFF未初期化状態');
+            completeDetail.textContent = 'API応答時間: ' + elapsed + '秒\n予約が完了しました。（LIFF初期化待機中）';
           }
         } catch (messageError) {
           console.log('メッセージ送信エラー:', messageError);
@@ -243,11 +253,11 @@
         // 3秒後にLIFFアプリを自動で閉じる（メッセージ送信時間を考慮）
         setTimeout(() => {
           try {
-            if (typeof liff !== 'undefined' && liff.isInClient()) {
+            if (liffReady && liff.isInClient()) {
               liff.closeWindow();
             } else {
               // LIFF環境でない場合の代替処理
-              console.log('LIFF環境ではありません');
+              console.log('LIFF環境ではありません（自動クローズなし）');
             }
           } catch (error) {
             console.log('ウィンドウクローズエラー:', error);
@@ -269,7 +279,7 @@
     });
     completeOkBtn.addEventListener('click', () => {
       try {
-        if (typeof liff !== 'undefined' && liff.isInClient()) {
+        if (liffReady && liff.isInClient()) {
           liff.closeWindow();
         } else {
           completeMessage.style.display = 'none';

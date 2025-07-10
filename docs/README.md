@@ -1,6 +1,6 @@
 # LINE Mini App - 予約フォーム
 
-**最終更新:** 2025年7月10日 21:15 (JST)
+**最終更新:** 2025年7月10日 21:55 (JST)
 
 ## 概要
 LINE Mini App用の予約フォームアプリケーションです。
@@ -93,14 +93,24 @@ https://ccb-shinro-github.github.io/lineminiapp-dev/
 
 ## 開発メモ
 - URLは定数化済み（変更が必要な場合は `API_ENDPOINT` を修正）
-- バージョン: ver6
+- バージョン: ver7
 - プライバシーポリシーリンクは要更新
+
+### ver7の改善点
+- **LIFF初期化状態管理**: `liffReady` フラグで初期化完了を追跡
+- **送信ボタン制御**: LIFF初期化完了まで送信ボタンを無効化
+- **エラーメッセージ改善**: LIFF状態に応じた詳細なメッセージ表示
 
 ## LIFF設定
 LIFF IDは `index.html` 内で設定済みです：
 ```javascript
 const LIFF_ID = '2007366489-ZaL835MB'; // 入力フォーム (Full)
-await liff.init({ liffId: LIFF_ID });
+let liffReady = false; // 初期化状態管理
+
+async function initializeLiff() {
+  await liff.init({ liffId: LIFF_ID });
+  liffReady = true; // 初期化完了フラグ
+}
 ```
 
 **アクセス方法:**

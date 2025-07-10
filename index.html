@@ -113,6 +113,11 @@
     </div>
   </div>
   <script>
+    // API エンドポイント定数
+    //const API_ENDPOINT = 'https://homepc.gamebox777.work/api/miniapp-api/reservations';
+    const API_ENDPOINT = 'https://port7071.gamebox777.work/api/miniapp-api/reservations';
+
+    
     // URLパラメータからtokenを取得しhiddenでセット
     const p     = new URLSearchParams(location.search);
     const token = p.get('tok') ?? '';
@@ -147,7 +152,7 @@
         let debugLog = '';
         debugLog += '[送信データ]\n' + JSON.stringify(body, null, 2) + '\n\n';
 
-        const response = await fetch('https://homepc.gamebox777.work/api/miniapp-api/reservations', {
+        const response = await fetch(API_ENDPOINT, {
           method : 'POST',
           headers: { 'Content-Type': 'application/json' },
           body   : JSON.stringify(body)

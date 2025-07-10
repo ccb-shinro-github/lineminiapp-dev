@@ -187,10 +187,30 @@
           throw new Error(`API エラー: ${response.status} - ${responseText}`);
         }
 
-        completeDetail.textContent = 'API応答時間: ' + elapsed + '秒\n予約が完了しました。アプリを自動で閉じます...';
+        completeDetail.textContent = 'API応答時間: ' + elapsed + '秒\n予約が完了しました。トーク画面にメッセージを送信中...';
         completeMessage.style.display = 'flex';
         
-        // 2秒後にLIFFアプリを自動で閉じる
+        // LINEトーク画面にメッセージを送信
+        try {
+          if (typeof liff !== 'undefined' && liff.isInClient()) {
+            await liff.sendMessages([
+              {
+                type: 'text',
+                text: `🎉 予約が完了しました！\n\n📝 予約内容\n・氏名: ${body.name}\n・学校名: ${body.school}\n・学年: ${body.grade}年\n\n⏱️ API応答時間: ${elapsed}秒\n\nありがとうございました！`
+              }
+            ]);
+            console.log('メッセージ送信完了');
+            completeDetail.textContent = 'API応答時間: ' + elapsed + '秒\nトーク画面にメッセージを送信しました。アプリを自動で閉じます...';
+          } else {
+            console.log('LIFF環境ではありません');
+            completeDetail.textContent = 'API応答時間: ' + elapsed + '秒\n予約が完了しました。アプリを自動で閉じます...';
+          }
+        } catch (messageError) {
+          console.log('メッセージ送信エラー:', messageError);
+          completeDetail.textContent = 'API応答時間: ' + elapsed + '秒\n予約が完了しました。アプリを自動で閉じます...';
+        }
+        
+        // 3秒後にLIFFアプリを自動で閉じる（メッセージ送信時間を考慮）
         setTimeout(() => {
           try {
             if (typeof liff !== 'undefined' && liff.isInClient()) {
@@ -202,7 +222,7 @@
           } catch (error) {
             console.log('ウィンドウクローズエラー:', error);
           }
-        }, 2000);
+        }, 3000);
       } catch(err){
         let errorMessage = '送信に失敗しました。\n\n';
         errorMessage += '[エラー名]\n' + (err.name || '') + '\n';

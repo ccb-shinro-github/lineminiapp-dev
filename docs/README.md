@@ -28,8 +28,19 @@ lineminiapp-dev/
 ├── docs/
 │   └── README.md      # このファイル
 ├── index.html         # メインアプリケーション
+├── .nojekyll          # GitHub Pages用設定ファイル
 └── .gitignore
 ```
+
+### .nojekyll について
+GitHub Pagesでサイトを公開する際に、Jekyll処理をスキップするためのファイルです。
+
+- **目的**: GitHubが自動的にJekyll（静的サイトジェネレータ）でページを処理することを防ぐ
+- **効果**: HTMLファイルをそのまま配信する（Jekyllの変換処理なし）
+- **配置**: リポジトリのルートディレクトリ
+- **内容**: 空ファイル（存在するだけで効果を発揮）
+
+このファイルがあることで、`index.html`が直接GitHub Pagesで配信されます。
 
 ## 開発メモ
 - URLは定数化済み（変更が必要な場合は `API_ENDPOINT` を修正）

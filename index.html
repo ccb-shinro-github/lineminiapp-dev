@@ -4,7 +4,8 @@
   <meta charset="utf-8">
   <title>予約フォーム</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <!-- LIFF SDK 削除 -->
+  <!-- LIFF SDK -->
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f4f6f8;}
     .container{max-width:340px;margin:0 auto;padding:24px;}
@@ -117,6 +118,15 @@
     //const API_ENDPOINT = 'https://homepc.gamebox777.work/api/miniapp-api/reservations';
     const API_ENDPOINT = 'https://port7071.gamebox777.work/api/miniapp-api/reservations';
 
+    // LIFF初期化
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        await liff.init({ liffId: 'YOUR_LIFF_ID' }); // 実際のLIFF IDに置き換える
+        console.log('LIFF初期化完了');
+      } catch (error) {
+        console.log('LIFF初期化エラー:', error);
+      }
+    });
     
     // URLパラメータからtokenを取得しhiddenでセット
     const p     = new URLSearchParams(location.search);
@@ -177,8 +187,22 @@
           throw new Error(`API エラー: ${response.status} - ${responseText}`);
         }
 
-        completeDetail.textContent = 'API応答時間: ' + elapsed + '秒\n画面右上の×ボタンでこのページを閉じてください。';
+        completeDetail.textContent = 'API応答時間: ' + elapsed + '秒\n予約が完了しました。アプリを自動で閉じます...';
         completeMessage.style.display = 'flex';
+        
+        // 2秒後にLIFFアプリを自動で閉じる
+        setTimeout(() => {
+          try {
+            if (typeof liff !== 'undefined' && liff.isInClient()) {
+              liff.closeWindow();
+            } else {
+              // LIFF環境でない場合の代替処理
+              console.log('LIFF環境ではありません');
+            }
+          } catch (error) {
+            console.log('ウィンドウクローズエラー:', error);
+          }
+        }, 2000);
       } catch(err){
         let errorMessage = '送信に失敗しました。\n\n';
         errorMessage += '[エラー名]\n' + (err.name || '') + '\n';
@@ -194,7 +218,16 @@
       spinner.style.display = 'none'; // スピナー非表示
     });
     completeOkBtn.addEventListener('click', () => {
-      completeMessage.style.display = 'none';
+      try {
+        if (typeof liff !== 'undefined' && liff.isInClient()) {
+          liff.closeWindow();
+        } else {
+          completeMessage.style.display = 'none';
+        }
+      } catch (error) {
+        console.log('ウィンドウクローズエラー:', error);
+        completeMessage.style.display = 'none';
+      }
     });
   </script>
 </body>

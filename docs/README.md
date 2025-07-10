@@ -11,11 +11,13 @@ LINE Mini App用の予約フォームアプリケーションです。
 - レスポンシブデザイン
 - ローディング表示
 - 完了メッセージ表示
+- **LIFF自動クローズ**: 予約完了後、2秒で自動的にアプリが閉じます
 
 ## 技術仕様
 - HTML5 + CSS3 + JavaScript (Vanilla)
 - Fetch API使用
 - レスポンシブ対応
+- **LIFF SDK v2**: LINE Mini App機能（自動クローズ等）
 
 ## API設定
 APIエンドポイントは `index.html` の `API_ENDPOINT` 定数で管理されています。
@@ -85,4 +87,15 @@ https://ccb-shinro-github.github.io/lineminiapp-dev/
 ## 開発メモ
 - URLは定数化済み（変更が必要な場合は `API_ENDPOINT` を修正）
 - バージョン: ver6
-- プライバシーポリシーリンクは要更新 
+- プライバシーポリシーリンクは要更新
+
+## LIFF設定
+LIFF IDは `index.html` 内で設定が必要です：
+```javascript
+await liff.init({ liffId: 'YOUR_LIFF_ID' }); // 実際のLIFF IDに置き換える
+```
+
+**自動クローズ機能:**
+- 予約完了後、2秒で自動的にアプリが閉じます
+- OKボタンクリックでも即座に閉じます
+- LIFF環境外では従来通りメッセージ非表示のみ 

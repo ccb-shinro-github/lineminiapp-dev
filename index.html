@@ -118,11 +118,19 @@
     //const API_ENDPOINT = 'https://homepc.gamebox777.work/api/miniapp-api/reservations';
     const API_ENDPOINT = 'https://port7071.gamebox777.work/api/miniapp-api/reservations';
 
+    // LIFF設定
+    const LIFF_ID = '2007366489-ZaL835MB'; // 入力フォーム (Full)
+    const ENABLE_TEST_MODE = false; // 本番用設定
+
     // LIFF初期化
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        await liff.init({ liffId: 'YOUR_LIFF_ID' }); // 実際のLIFF IDに置き換える
-        console.log('LIFF初期化完了');
+        if (LIFF_ID !== 'YOUR_LIFF_ID') {
+          await liff.init({ liffId: LIFF_ID });
+          console.log('LIFF初期化完了');
+        } else {
+          console.log('⚠️ LIFF IDが設定されていません。LIFF_ID変数を設定してください。');
+        }
       } catch (error) {
         console.log('LIFF初期化エラー:', error);
       }
@@ -191,23 +199,45 @@
         completeMessage.style.display = 'flex';
         
         // LINEトーク画面にメッセージを送信
+        console.log('LIFF状態チェック:');
+        console.log('- liff定義済み:', typeof liff !== 'undefined');
+        console.log('- LIFF初期化済み:', typeof liff !== 'undefined' && liff.isReady && liff.isReady());
+        console.log('- LINEクライアント内:', typeof liff !== 'undefined' && liff.isInClient && liff.isInClient());
+        
         try {
-          if (typeof liff !== 'undefined' && liff.isInClient()) {
-            await liff.sendMessages([
-              {
-                type: 'text',
-                text: `🎉 予約が完了しました！\n\n📝 予約内容\n・氏名: ${body.name}\n・学校名: ${body.school}\n・学年: ${body.grade}年\n\n⏱️ API応答時間: ${elapsed}秒\n\nありがとうございました！`
+          if (typeof liff !== 'undefined' && liff.isReady && liff.isReady()) {
+            if (liff.isInClient()) {
+              console.log('メッセージ送信開始...');
+              await liff.sendMessages([
+                {
+                  type: 'text',
+                  text: `🎉 予約が完了しました！\n\n📝 予約内容\n・氏名: ${body.name}\n・学校名: ${body.school}\n・学年: ${body.grade}年\n\n⏱️ API応答時間: ${elapsed}秒\n\nありがとうございました！`
+                }
+              ]);
+              console.log('メッセージ送信完了');
+              completeDetail.textContent = 'API応答時間: ' + elapsed + '秒\nトーク画面にメッセージを送信しました。アプリを自動で閉じます...';
+            } else {
+              console.log('LINEクライアント外環境です');
+              if (ENABLE_TEST_MODE) {
+                console.log('テストモード: メッセージ送信を試行します');
+                await liff.sendMessages([
+                  {
+                    type: 'text',
+                    text: `🎉 予約が完了しました！\n\n📝 予約内容\n・氏名: ${body.name}\n・学校名: ${body.school}\n・学年: ${body.grade}年\n\n⏱️ API応答時間: ${elapsed}秒\n\nありがとうございました！`
+                  }
+                ]);
+                completeDetail.textContent = 'API応答時間: ' + elapsed + '秒\n[テストモード] メッセージ送信を試行しました。';
+              } else {
+                completeDetail.textContent = 'API応答時間: ' + elapsed + '秒\n予約が完了しました。（LINEクライアント外のため、メッセージ送信なし）';
               }
-            ]);
-            console.log('メッセージ送信完了');
-            completeDetail.textContent = 'API応答時間: ' + elapsed + '秒\nトーク画面にメッセージを送信しました。アプリを自動で閉じます...';
+            }
           } else {
-            console.log('LIFF環境ではありません');
-            completeDetail.textContent = 'API応答時間: ' + elapsed + '秒\n予約が完了しました。アプリを自動で閉じます...';
+            console.log('LIFF未初期化またはSDK未読み込み');
+            completeDetail.textContent = 'API応答時間: ' + elapsed + '秒\n予約が完了しました。（LIFF未初期化）';
           }
         } catch (messageError) {
           console.log('メッセージ送信エラー:', messageError);
-          completeDetail.textContent = 'API応答時間: ' + elapsed + '秒\n予約が完了しました。アプリを自動で閉じます...';
+          completeDetail.textContent = 'API応答時間: ' + elapsed + '秒\n予約が完了しました。（メッセージ送信エラー: ' + messageError.message + '）';
         }
         
         // 3秒後にLIFFアプリを自動で閉じる（メッセージ送信時間を考慮）

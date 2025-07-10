@@ -1,9 +1,15 @@
 # LINE Mini App - 予約フォーム
 
-**最終更新:** 2025年7月10日 20:47 (JST)
+**最終更新:** 2025年7月10日 21:15 (JST)
 
 ## 概要
 LINE Mini App用の予約フォームアプリケーションです。
+
+**LIFFアプリ情報:**
+- **アプリ名**: 入力フォーム
+- **LIFF ID**: 2007366489-ZaL835MB
+- **LIFF URL**: https://liff.line.me/2007366489-ZaL835MB
+- **サイズ**: Full（フルスクリーン表示）
 
 ## 機能
 - 氏名、学校名、学年の入力
@@ -91,12 +97,45 @@ https://ccb-shinro-github.github.io/lineminiapp-dev/
 - プライバシーポリシーリンクは要更新
 
 ## LIFF設定
-LIFF IDは `index.html` 内で設定が必要です：
+LIFF IDは `index.html` 内で設定済みです：
 ```javascript
-await liff.init({ liffId: 'YOUR_LIFF_ID' }); // 実際のLIFF IDに置き換える
+const LIFF_ID = '2007366489-ZaL835MB'; // 入力フォーム (Full)
+await liff.init({ liffId: LIFF_ID });
 ```
 
+**アクセス方法:**
+- **LINE内からアクセス**: https://liff.line.me/2007366489-ZaL835MB
+- **GitHub Pages**: https://ccb-shinro-github.github.io/lineminiapp-dev/
+
 **自動クローズ機能:**
-- 予約完了後、2秒で自動的にアプリが閉じます
+- 予約完了後、3秒で自動的にアプリが閉じます
 - OKボタンクリックでも即座に閉じます
-- LIFF環境外では従来通りメッセージ非表示のみ 
+- LIFF環境外では従来通りメッセージ非表示のみ
+
+## トラブルシューティング
+
+### メッセージが表示されない場合
+
+1. **LIFF IDの設定確認**
+   ```javascript
+   const LIFF_ID = '2007366489-ZaL835MB'; // 設定済み
+   ```
+
+2. **テスト環境の確認**
+   - ブラウザで直接開いていませんか？
+   - LINEアプリ内からアクセスしてください
+
+3. **デバッグ用設定**
+   ```javascript
+   const ENABLE_TEST_MODE = true; // テスト用モードを有効化
+   ```
+
+4. **コンソールログの確認**
+   - ブラウザの開発者ツールでエラーを確認
+   - LIFF初期化状況をチェック
+
+### LIFFアプリの管理
+1. **LINE Developers コンソール**: https://developers.line.biz/console/
+2. **現在の設定**: LIFF ID `2007366489-ZaL835MB` で設定済み
+3. **サイズ**: Full（フルスクリーン表示）
+4. **エンドポイントURL**: GitHub Pages URL 

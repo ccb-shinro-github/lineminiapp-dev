@@ -30,8 +30,10 @@ LINE Mini App用の予約フォームアプリケーションです。
 APIエンドポイントは `index.html` の `API_ENDPOINT` 定数で管理されています。
 
 ```javascript
-const API_ENDPOINT = 'https://port7071.gamebox777.work/api/miniapp-api/reservations';
+const API_ENDPOINT = 'https://[API_DOMAIN]/api/miniapp-api/reservations';
 ```
+
+> **注意**: 実際のAPIエンドポイントはソースコードで確認してください。
 
 ## ファイル構成
 ```
@@ -72,7 +74,7 @@ origin  https://github.com/ccb-shinro-github/lineminiapp-dev.git (push)
 #### サイト情報
 - **公開URL**: https://ccb-shinro-github.github.io/lineminiapp-dev/
 - **デプロイソース**: `main` ブランチ
-- **最終デプロイ**: @gamebox777 により5分前
+- **最終デプロイ**: 自動デプロイ設定済み
 - **ビルド方式**: pages build and deployment workflow
 
 #### 設定詳細
@@ -144,8 +146,12 @@ async function initializeLiff() {
    - ブラウザの開発者ツールでエラーを確認
    - LIFF初期化状況をチェック
 
-### LIFFアプリの管理
-1. **LINE Developers コンソール**: https://developers.line.biz/console/
-2. **現在の設定**: LIFF ID `2007366489-ZaL835MB` で設定済み
-3. **サイズ**: Full（フルスクリーン表示）
-4. **エンドポイントURL**: GitHub Pages URL 
+### 開発者向け情報
+セキュリティ上の理由により、詳細な設定情報については
+開発チームにお問い合わせください。
+
+**管理者向けリソース:**
+- **LINE Developers コンソール**: https://developers.line.biz/console/
+- **現在の設定**: LIFF ID `2007366489-ZaL835MB` で設定済み
+- **サイズ**: Full（フルスクリーン表示）
+- **エンドポイントURL**: GitHub Pages URL 

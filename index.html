@@ -175,7 +175,27 @@
         if (debugDiv) {
           debugDiv.style.display = window.showDebugLogs ? 'block' : 'none';
         }
-        if (window.showDebugLogs) updateDebugDisplay();
+        if (window.showDebugLogs) {
+          updateDebugDisplay();
+          // タップ回数表示を追加
+          const tapInfo = document.createElement('div');
+          tapInfo.style.cssText = `
+            position: fixed; top: 50px; right: 10px; 
+            background: rgba(0,255,0,0.8); color: white; 
+            padding: 5px; font-size: 12px; z-index: 99999;
+            border-radius: 3px;
+          `;
+          tapInfo.textContent = 'デバッグログ表示中';
+          tapInfo.id = 'tapInfo';
+          document.body.appendChild(tapInfo);
+          setTimeout(() => {
+            const info = document.getElementById('tapInfo');
+            if (info) info.remove();
+          }, 2000);
+        } else {
+          const info = document.getElementById('tapInfo');
+          if (info) info.remove();
+        }
         tapCount = 0;
       }
     });
@@ -370,7 +390,7 @@
               }]);
               
               debugLog('✅ 予約データ送信完了');
-              completeDetail.textContent = '✅ 予約データを送信しました！\n\nLINEトーク画面で予約内容の確認と結果をお待ちください。\n\nアプリを自動で閉じます...';
+              completeDetail.textContent = '✅ 予約データを送信しました！\n\nLINEトーク画面で予約内容の確認と結果をお待ちください。\n\nOKボタンを押してアプリを閉じてください。';
             } else {
               debugLog('⚠️ LINEクライアント外環境です');
               completeDetail.textContent = '⚠️ LINEアプリ内で開いてください。\n\nLINEアプリのトーク画面から再度お試しください。';
@@ -407,18 +427,8 @@
           throw new Error('予約送信エラー: ' + messageError.message);
         }
         
-        // 3秒後にLIFFアプリを自動で閉じる
-        setTimeout(() => {
-          try {
-            if (liffReady && liff.isInClient()) {
-              liff.closeWindow();
-            } else {
-              console.log('LIFF環境ではありません（自動クローズなし）');
-            }
-          } catch (error) {
-            console.log('ウィンドウクローズエラー:', error);
-          }
-        }, 3000);
+        // 自動クローズを無効化（ユーザーが手動で閉じるまで待機）
+        debugLog('✅ 予約送信完了。手動でOKボタンを押してアプリを閉じてください。');
         
       } catch(err){
         let errorMessage = '予約送信に失敗しました。\n\n';

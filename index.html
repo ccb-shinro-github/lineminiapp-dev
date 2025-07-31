@@ -93,24 +93,24 @@
       </div>
       <form id="reserveForm">
         <label>姓（苗字）
-          <input type="text" name="familyName" placeholder="山田" required>
+          <input type="text" name="familyName" placeholder="山田" value="テスト" required>
         </label>
         <label>名（名前）
-          <input type="text" name="firstName" placeholder="花子" required>
+          <input type="text" name="firstName" placeholder="花子" value="太郎" required>
         </label>
         <label>学校名
-          <input type="text" name="schoolName" placeholder="〇〇高等学校" required>
+          <input type="text" name="schoolName" placeholder="〇〇高等学校" value="デバッグ高等学校" required>
         </label>
         <label>学年
           <select name="schoolGrade" required>
-            <option value="" hidden disabled selected>選択してください</option>
+            <option value="" hidden disabled>選択してください</option>
             <option value="1">1年</option>
-            <option value="2">2年</option>
+            <option value="2" selected>2年</option>
             <option value="3">3年</option>
           </select>
         </label>
         <label>質問・備考
-          <textarea name="question" rows="3" placeholder="ご質問やご要望があればご記入ください（任意）"></textarea>
+          <textarea name="question" rows="3" placeholder="ご質問やご要望があればご記入ください（任意）">これはデバッグ用のテストデータです。LIFFアプリからの送信テストを行っています。</textarea>
         </label>
         <a href="https://example.com/privacy" target="_blank" class="policy-link">プライバシーポリシーについて</a>
         <button class="submit-btn" type="submit" id="submitBtn">
@@ -193,9 +193,21 @@
         
         // 初期化状態の詳細チェック
         debugLog('LIFF詳細状態:');
-        debugLog('- liff.isReady(): ' + (liff.isReady ? liff.isReady() : 'isReady関数なし'));
-        debugLog('- liff.isInClient(): ' + (liff.isInClient ? liff.isInClient() : 'isInClient関数なし'));
-        debugLog('- liff.isLoggedIn(): ' + (liff.isLoggedIn ? liff.isLoggedIn() : 'isLoggedIn関数なし'));
+        try {
+          debugLog('- liff.isReady(): ' + (liff.isReady ? liff.isReady() : 'isReady関数なし'));
+        } catch (readyError) {
+          debugLog('- liff.isReady(): エラー - ' + readyError.message);
+        }
+        try {
+          debugLog('- liff.isInClient(): ' + (liff.isInClient ? liff.isInClient() : 'isInClient関数なし'));
+        } catch (clientError) {
+          debugLog('- liff.isInClient(): エラー - ' + clientError.message);
+        }
+        try {
+          debugLog('- liff.isLoggedIn(): ' + (liff.isLoggedIn ? liff.isLoggedIn() : 'isLoggedIn関数なし'));
+        } catch (loginError) {
+          debugLog('- liff.isLoggedIn(): エラー - ' + loginError.message);
+        }
         
         liffReady = true;
         debugLog('✅ LIFF初期化成功');
@@ -312,12 +324,33 @@
         }
         
         try {
-          // より柔軟な条件チェック
-          const liffInitialized = liffReady && (typeof liff !== 'undefined') && liff.isReady && liff.isReady();
-          console.log('LIFF初期化完了判定:', liffInitialized);
+                  // より柔軟な条件チェック（liff.isReady()の呼び出しを安全に行う）
+        let liffInitialized = false;
+        if (liffReady && typeof liff !== 'undefined') {
+          if (typeof liff.isReady === 'function') {
+            try {
+              liffInitialized = liff.isReady();
+            } catch (readyError) {
+              debugLog('liff.isReady()呼び出しエラー: ' + readyError.message);
+              // isReady()が失敗した場合は、liffReadyフラグのみで判定
+              liffInitialized = liffReady;
+            }
+          } else {
+            // isReady関数がない場合は、liffReadyフラグのみで判定
+            liffInitialized = liffReady;
+          }
+        }
+        debugLog('LIFF初期化完了判定: ' + liffInitialized);
           
           if (liffInitialized) {
-            const inClient = liff.isInClient && liff.isInClient();
+            let inClient = false;
+            try {
+              inClient = liff.isInClient && liff.isInClient();
+            } catch (clientError) {
+              debugLog('liff.isInClient()呼び出しエラー: ' + clientError.message);
+              // エラーの場合は、LINE環境と仮定して続行
+              inClient = true;
+            }
             debugLog('LINEクライアント内判定: ' + inClient);
             
             if (inClient) {
@@ -356,10 +389,16 @@
             }
             if (typeof liff === 'undefined') {
               errorDetail += '• LIFF SDKの読み込み失敗\n';
-            } else if (!liff.isReady || !liff.isReady()) {
-              errorDetail += '• LIFF readyステートになっていない\n';
+            } else {
+              try {
+                if (!liff.isReady || !liff.isReady()) {
+                  errorDetail += '• LIFF readyステートになっていない\n';
+                }
+              } catch (readyError) {
+                errorDetail += '• LIFF ready状態確認でエラー: ' + readyError.message + '\n';
+              }
             }
-            errorDetail += '\n対処法：\n• ページを再読み込みしてください\n• LINEアプリを再起動してください';
+            errorDetail += '\n対処法：\n• ページを再読み込みしてください\n• LINEアプリを再起動してください\n• 3回タップでデバッグログを確認';
             
             completeDetail.textContent = errorDetail;
           }

@@ -130,23 +130,109 @@
     
     // LIFF初期化状態管理
     let liffReady = false;
+    
+    // デバッグ用：LINE環境でもログを確認できるように
+    let debugLogs = [];
+    function debugLog(message, data = null) {
+      const timestamp = new Date().toLocaleTimeString();
+      const logEntry = `[${timestamp}] ${message}`;
+      debugLogs.push(logEntry);
+      console.log(logEntry, data);
+      
+      // デバッグログを画面に表示するオプション
+      if (window.showDebugLogs) {
+        updateDebugDisplay();
+      }
+    }
+    
+    function updateDebugDisplay() {
+      let debugDiv = document.getElementById('debugDisplay');
+      if (!debugDiv) {
+        debugDiv = document.createElement('div');
+        debugDiv.id = 'debugDisplay';
+        debugDiv.style.cssText = `
+          position: fixed; top: 10px; right: 10px; 
+          background: rgba(0,0,0,0.8); color: white; 
+          padding: 10px; font-size: 10px; 
+          max-width: 200px; max-height: 300px; 
+          overflow: auto; z-index: 99999;
+          border-radius: 5px; display: none;
+        `;
+        document.body.appendChild(debugDiv);
+      }
+      debugDiv.innerHTML = debugLogs.slice(-20).join('<br>');
+      debugDiv.style.display = 'block';
+    }
+    
+    // デバッグ表示の切り替え（3回タップで表示）
+    let tapCount = 0;
+    document.addEventListener('click', () => {
+      tapCount++;
+      setTimeout(() => { tapCount = 0; }, 2000);
+      if (tapCount >= 3) {
+        window.showDebugLogs = !window.showDebugLogs;
+        const debugDiv = document.getElementById('debugDisplay');
+        if (debugDiv) {
+          debugDiv.style.display = window.showDebugLogs ? 'block' : 'none';
+        }
+        if (window.showDebugLogs) updateDebugDisplay();
+        tapCount = 0;
+      }
+    });
 
     // LIFF初期化
     async function initializeLiff() {
+      debugLog('=== LIFF初期化開始 ===');
+      debugLog('LIFF_ID: ' + LIFF_ID);
+      debugLog('liff オブジェクト存在確認: ' + (typeof liff !== 'undefined'));
+      
       try {
+        debugLog('liff.init() 呼び出し中...');
         await liff.init({ liffId: LIFF_ID });
+        debugLog('liff.init() 完了');
+        
+        // 初期化状態の詳細チェック
+        debugLog('LIFF詳細状態:');
+        debugLog('- liff.isReady(): ' + (liff.isReady ? liff.isReady() : 'isReady関数なし'));
+        debugLog('- liff.isInClient(): ' + (liff.isInClient ? liff.isInClient() : 'isInClient関数なし'));
+        debugLog('- liff.isLoggedIn(): ' + (liff.isLoggedIn ? liff.isLoggedIn() : 'isLoggedIn関数なし'));
+        
         liffReady = true;
-        console.log('LIFF初期化完了');
+        debugLog('✅ LIFF初期化成功');
         
         // 初期化完了後にボタンを有効化
         const submitBtn = document.getElementById('submitBtn');
         if (submitBtn) {
           submitBtn.disabled = false;
-          submitBtn.textContent = 'プライバシーポリシーに\n同意して予約する';
+          submitBtn.innerHTML = 'プライバシーポリシーに<br>同意して予約する';
+          debugLog('送信ボタン有効化完了');
         }
+        
+        // ユーザー情報も取得してみる
+        try {
+          if (liff.isLoggedIn && liff.isLoggedIn()) {
+            const profile = await liff.getProfile();
+            debugLog('LINEユーザー情報取得成功: ' + profile.displayName);
+          }
+        } catch (profileError) {
+          debugLog('ユーザー情報取得エラー: ' + profileError.message);
+        }
+        
       } catch (error) {
-        console.log('LIFF初期化エラー:', error);
+        debugLog('❌ LIFF初期化エラー: ' + error.message);
+        debugLog('エラー詳細: ' + error.name + ' - ' + error.message);
         liffReady = false;
+        
+        // エラー時のボタン状態更新
+        const submitBtn = document.getElementById('submitBtn');
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '❌ LIFF初期化失敗<br>3回タップでログ表示<br>再読み込みしてください';
+        }
+        
+        // エラー時はデバッグ表示を自動で有効化
+        window.showDebugLogs = true;
+        updateDebugDisplay();
       }
     }
 
@@ -210,36 +296,72 @@
         completeDetail.textContent = '予約データを準備しました。キモチAPIに送信中...';
         completeMessage.style.display = 'flex';
         
-        // LIFF状態確認
-        console.log('LIFF状態チェック:');
-        console.log('- liff定義済み:', typeof liff !== 'undefined');
-        console.log('- liffReady フラグ:', liffReady);
-        console.log('- LIFF初期化済み:', liffReady && liff.isReady && liff.isReady());
-        console.log('- LINEクライアント内:', liffReady && liff.isInClient && liff.isInClient());
+        // 詳細なLIFF状態確認
+        debugLog('=== 送信時LIFF状態チェック ===');
+        debugLog('- liff定義済み: ' + (typeof liff !== 'undefined'));
+        debugLog('- liffReady フラグ: ' + liffReady);
+        
+        if (typeof liff !== 'undefined') {
+          console.log('- liff.isReady存在:', typeof liff.isReady === 'function');
+          console.log('- liff.isReady()結果:', liff.isReady ? liff.isReady() : 'N/A');
+          console.log('- liff.isInClient存在:', typeof liff.isInClient === 'function');
+          console.log('- liff.isInClient()結果:', liff.isInClient ? liff.isInClient() : 'N/A');
+          console.log('- liff.sendMessages存在:', typeof liff.sendMessages === 'function');
+        } else {
+          console.error('liffオブジェクトが未定義です！LIFF SDKの読み込みに失敗している可能性があります。');
+        }
         
         try {
-          if (liffReady && liff.isReady && liff.isReady()) {
-            if (liff.isInClient()) {
-              console.log('キモチAPI予約送信開始...');
+          // より柔軟な条件チェック
+          const liffInitialized = liffReady && (typeof liff !== 'undefined') && liff.isReady && liff.isReady();
+          console.log('LIFF初期化完了判定:', liffInitialized);
+          
+          if (liffInitialized) {
+            const inClient = liff.isInClient && liff.isInClient();
+            debugLog('LINEクライアント内判定: ' + inClient);
+            
+            if (inClient) {
+              debugLog('✅ キモチAPI予約送信開始...');
               
               // 予約データをJSON文字列化してURLエンコード
               const reservationJson = encodeURIComponent(JSON.stringify(reservationData));
+              debugLog('エンコード済み予約データ（最初の100文字）: ' + reservationJson.substring(0, 100) + '...');
               
-              // admissionHandler.jsにポストバックメッセージとして送信
+              // admissionHandler.jsにテキストメッセージとして送信
+              const message = `reservation_submit:${reservationJson}`;
+              debugLog('送信メッセージ長: ' + message.length);
+              
               await liff.sendMessages([{
                 type: 'text',
-                text: `reservation_submit:${reservationJson}`
+                text: message
               }]);
               
-              console.log('予約データ送信完了');
-              completeDetail.textContent = '✅ 予約データをキモチAPIに送信しました！\n\nLINEトーク画面で結果を確認してください。アプリを自動で閉じます...';
+              debugLog('✅ 予約データ送信完了');
+              completeDetail.textContent = '✅ 予約データを送信しました！\n\nLINEトーク画面で予約内容の確認と結果をお待ちください。\n\nアプリを自動で閉じます...';
             } else {
-              console.log('LINEクライアント外環境です');
-              completeDetail.textContent = '⚠️ LINEクライアント外環境のため、予約送信できません。';
+              debugLog('⚠️ LINEクライアント外環境です');
+              completeDetail.textContent = '⚠️ LINEアプリ内で開いてください。\n\nLINEアプリのトーク画面から再度お試しください。';
             }
           } else {
-            console.log('LIFF未初期化状態');
-            completeDetail.textContent = '⚠️ LIFF初期化中のため、予約送信できません。しばらくお待ちください。';
+            debugLog('❌ LIFF未初期化状態');
+            debugLog('詳細状況:');
+            debugLog('- liffReady: ' + liffReady);
+            debugLog('- liff存在: ' + (typeof liff !== 'undefined'));
+            debugLog('- liff.isReady存在: ' + (typeof liff !== 'undefined' && typeof liff.isReady === 'function'));
+            debugLog('- liff.isReady(): ' + (typeof liff !== 'undefined' && liff.isReady ? liff.isReady() : 'N/A'));
+            
+            let errorDetail = 'LIFF初期化が完了していません。\n\n原因：\n';
+            if (!liffReady) {
+              errorDetail += '• LIFF初期化処理でエラーが発生\n';
+            }
+            if (typeof liff === 'undefined') {
+              errorDetail += '• LIFF SDKの読み込み失敗\n';
+            } else if (!liff.isReady || !liff.isReady()) {
+              errorDetail += '• LIFF readyステートになっていない\n';
+            }
+            errorDetail += '\n対処法：\n• ページを再読み込みしてください\n• LINEアプリを再起動してください';
+            
+            completeDetail.textContent = errorDetail;
           }
         } catch (messageError) {
           console.log('予約送信エラー:', messageError);

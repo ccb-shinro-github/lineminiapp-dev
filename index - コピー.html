@@ -92,17 +92,8 @@
         </div>
       </div>
       <form id="reserveForm">
-        <label>姓
-          <input type="text" name="familyName" placeholder="山田" required>
-        </label>
-        <label>名
-          <input type="text" name="firstName" placeholder="花子" required>
-        </label>
-        <label>セイ（ヨミガナ）
-          <input type="text" name="familyNameKana" placeholder="ヤマダ" required>
-        </label>
-        <label>メイ（ヨミガナ）
-          <input type="text" name="firstNameKana" placeholder="ハナコ" required>
+        <label>氏名
+          <input type="text" name="name" placeholder="山田 花子" required>
         </label>
         <label>学校名
           <input type="text" name="school" placeholder="〇〇高校" required>
@@ -170,13 +161,10 @@
       console.log('送信ボタン押下:', new Date(startTime).toISOString());
       try {
         const body = {
-          familyName     : form.familyName.value.trim(),
-          firstName      : form.firstName.value.trim(),
-          familyNameKana : form.familyNameKana.value.trim(),
-          firstNameKana  : form.firstNameKana.value.trim(),
-          school         : form.school.value.trim(),
-          grade          : form.grade.value,
-          token          : token
+          name   : form.name.value.trim(),
+          school : form.school.value.trim(),
+          grade  : form.grade.value,
+          token  : token
         };
 
         let debugLog = '';
@@ -223,7 +211,7 @@
               await liff.sendMessages([
                 {
                   type: 'text',
-                  text: `🎉 予約が完了しました！\n\n📝 予約内容\n・氏名: ${body.familyName} ${body.firstName}\n・ヨミガナ: ${body.familyNameKana} ${body.firstNameKana}\n・学校名: ${body.school}\n・学年: ${body.grade}年\n\n⏱️ API応答時間: ${elapsed}秒\n\nありがとうございました！`
+                  text: `🎉 予約が完了しました！\n\n📝 予約内容\n・氏名: ${body.name}\n・学校名: ${body.school}\n・学年: ${body.grade}年\n\n⏱️ API応答時間: ${elapsed}秒\n\nありがとうございました！`
                 }
               ]);
               console.log('メッセージ送信完了');
@@ -235,7 +223,7 @@
                 await liff.sendMessages([
                   {
                     type: 'text',
-                    text: `🎉 予約が完了しました！\n\n📝 予約内容\n・氏名: ${body.familyName} ${body.firstName}\n・ヨミガナ: ${body.familyNameKana} ${body.firstNameKana}\n・学校名: ${body.school}\n・学年: ${body.grade}年\n\n⏱️ API応答時間: ${elapsed}秒\n\nありがとうございました！`
+                    text: `🎉 予約が完了しました！\n\n📝 予約内容\n・氏名: ${body.name}\n・学校名: ${body.school}\n・学年: ${body.grade}年\n\n⏱️ API応答時間: ${elapsed}秒\n\nありがとうございました！`
                   }
                 ]);
                 completeDetail.textContent = 'API応答時間: ' + elapsed + '秒\n[テストモード] メッセージ送信を試行しました。';

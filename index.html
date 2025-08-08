@@ -150,13 +150,14 @@
     }
     
     const API_ENDPOINT = getApiEndpoint();
+    console.log('🌐 現在のホスト名:', window.location.hostname);
     console.log('🌐 使用するAPI_ENDPOINT:', API_ENDPOINT);
     
     // APIエンドポイント情報を画面に表示
     document.addEventListener('DOMContentLoaded', () => {
       const apiEndpointElement = document.getElementById('apiEndpointInfo');
       if (apiEndpointElement) {
-        apiEndpointElement.textContent = `戻り先: ${API_ENDPOINT}`;
+        apiEndpointElement.textContent = `戻り先: ${API_ENDPOINT} (ホスト: ${window.location.hostname})`;
       }
     });
 

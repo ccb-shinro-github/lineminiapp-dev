@@ -136,8 +136,9 @@
     function getApiEndpoint() {
       const currentHost = window.location.hostname;
       
-      // Azure検証環境の判定
-      if (currentHost.includes('staging') || currentHost.includes('azurewebsites.net')) {
+      // Azure検証環境の判定（より具体的に）
+      if (currentHost === 'linebot-kimochipj-staging-azb3bnfahabahgd8.japaneast-01.azurewebsites.net' ||
+          currentHost.includes('staging')) {
         // Azure検証環境: linebot-kimochipj-staging-azb3bnfahabahgd8.japaneast-01.azurewebsites.net
         return 'https://linebot-kimochipj-staging-azb3bnfahabahgd8.japaneast-01.azurewebsites.net/api/miniapp-api/reservations';
       }

@@ -135,29 +135,36 @@
     // 環境判定とAPI エンドポイント設定
     function getApiEndpoint() {
       const currentHost = window.location.hostname;
-      
-      // Azure検証環境の判定（より具体的に）
-      if (currentHost === 'linebot-kimochipj-staging-azb3bnfahabahgd8.japaneast-01.azurewebsites.net' ||
-          currentHost.includes('staging')) {
-        // Azure検証環境: linebot-kimochipj-staging-azb3bnfahabahgd8.japaneast-01.azurewebsites.net
+      const envParam = new URLSearchParams(window.location.search).get('env');
+
+      // クエリでの明示指定を最優先
+      if (envParam) {
+        const normalized = envParam.toLowerCase();
+        if (normalized === 'stg' || normalized === 'staging') {
+          return 'https://linebot-kimochipj-staging-azb3bnfahabahgd8.japaneast-01.azurewebsites.net/api/miniapp-api/reservations';
+        }
+        if (normalized === 'dev' || normalized === 'development') {
+          return 'https://port7071.gamebox777.work/api/miniapp-api/reservations';
+        }
+      }
+
+      // ホスト名での自動判定（後方互換）
+      if (currentHost.includes('staging') || currentHost.includes('azurewebsites.net')) {
         return 'https://linebot-kimochipj-staging-azb3bnfahabahgd8.japaneast-01.azurewebsites.net/api/miniapp-api/reservations';
       }
-      // ローカル開発環境またはその他
-      else {
-        // 開発環境: port7071.gamebox777.work
-        return 'https://port7071.gamebox777.work/api/miniapp-api/reservations';
-      }
+
+      // 既定: 開発環境
+      return 'https://port7071.gamebox777.work/api/miniapp-api/reservations';
     }
     
     const API_ENDPOINT = getApiEndpoint();
-    console.log('🌐 現在のホスト名:', window.location.hostname);
     console.log('🌐 使用するAPI_ENDPOINT:', API_ENDPOINT);
     
     // APIエンドポイント情報を画面に表示
     document.addEventListener('DOMContentLoaded', () => {
       const apiEndpointElement = document.getElementById('apiEndpointInfo');
       if (apiEndpointElement) {
-        apiEndpointElement.textContent = `戻り先: ${API_ENDPOINT} (ホスト: ${window.location.hostname})`;
+        apiEndpointElement.textContent = `戻り先: ${API_ENDPOINT}`;
       }
     });
 

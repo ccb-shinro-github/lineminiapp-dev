@@ -101,7 +101,6 @@
     <div class="card">
       <button class="close-btn" aria-label="閉じる">✕</button>
       <h2>予約フォーム</h2>
-      <div id="apiEndpointInfo" class="api-endpoint-info">戻り先: 設定中...</div>
       <div id="loadingSpinner" class="spinner-overlay" style="display:none;">
         <div class="spinner"></div>
       </div>
@@ -140,6 +139,10 @@
         <button class="submit-btn" type="submit" id="submitBtn">
           プライバシーポリシーに<br>同意して予約する
         </button>
+        
+        <!-- デバッグ情報 -->
+        <div id="apiEndpointInfo" class="api-endpoint-info" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e0e0e0;"></div>
+        <div id="versionInfo" class="api-endpoint-info" style="margin-top: 8px; font-size: 0.6em; color: #999;"></div>
       </form>
     </div>
   </div>
@@ -158,11 +161,17 @@
         if (normalized === 'dev' || normalized === 'development') {
           return 'https://port7071.gamebox777.work/api/miniapp-api/reservations';
         }
+        if (normalized === 'prod' || normalized === 'production') {
+          return 'https://linebot-kimochipj-prod-azb3bnfahabahgd8.japaneast-01.azurewebsites.net/api/miniapp-api/reservations';
+        }
       }
 
       // ホスト名での自動判定（後方互換）
       if (currentHost.includes('staging') || currentHost.includes('azurewebsites.net')) {
         return 'https://linebot-kimochipj-staging-azb3bnfahabahgd8.japaneast-01.azurewebsites.net/api/miniapp-api/reservations';
+      }
+      if (currentHost.includes('production') || currentHost.includes('prod')) {
+        return 'https://linebot-kimochipj-prod-azb3bnfahabahgd8.japaneast-01.azurewebsites.net/api/miniapp-api/reservations';
       }
 
       // 既定: 開発環境
@@ -177,6 +186,12 @@
       const apiEndpointElement = document.getElementById('apiEndpointInfo');
       if (apiEndpointElement) {
         apiEndpointElement.textContent = `戻り先: ${API_ENDPOINT}`;
+      }
+      
+      // バージョン情報を表示
+      const versionElement = document.getElementById('versionInfo');
+      if (versionElement) {
+        versionElement.textContent = `v1.0.0 | ${new Date().toLocaleDateString('ja-JP')}`;
       }
       
       // 開発モードの場合、テストデータをフォームに設定

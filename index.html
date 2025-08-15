@@ -6,6 +6,18 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <!-- LIFF SDK -->
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script>
+    // 開発用設定
+    const DEV_MODE = true; // true: テストデータ表示, false: プレースホルダー表示
+    const TEST_DATA = {
+      familyName: '山田',
+      firstName: '花子',
+      familyNameKana: 'ヤマダ',
+      firstNameKana: 'ハナコ',
+      school: '〇〇高校',
+      grade: '2'
+    };
+  </script>
   <style>
     body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f4f6f8;}
     .container{max-width:340px;margin:0 auto;padding:24px;}
@@ -102,22 +114,22 @@
       </div>
       <form id="reserveForm">
         <label>姓
-          <input type="text" name="familyName" placeholder="山田" required>
+          <input type="text" name="familyName" id="familyName" required>
         </label>
         <label>名
-          <input type="text" name="firstName" placeholder="花子" required>
+          <input type="text" name="firstName" id="firstName" required>
         </label>
         <label>セイ（ヨミガナ）
-          <input type="text" name="familyNameKana" placeholder="ヤマダ" required>
+          <input type="text" name="familyNameKana" id="familyNameKana" required>
         </label>
         <label>メイ（ヨミガナ）
-          <input type="text" name="firstNameKana" placeholder="ハナコ" required>
+          <input type="text" name="firstNameKana" id="firstNameKana" required>
         </label>
         <label>学校名
-          <input type="text" name="school" placeholder="〇〇高校" required>
+          <input type="text" name="school" id="school" required>
         </label>
         <label>学年
-          <select name="grade" required>
+          <select name="grade" id="grade" required>
             <option value="" hidden disabled selected>選択してください</option>
             <option value="1">1年</option>
             <option value="2">2年</option>
@@ -165,6 +177,56 @@
       const apiEndpointElement = document.getElementById('apiEndpointInfo');
       if (apiEndpointElement) {
         apiEndpointElement.textContent = `戻り先: ${API_ENDPOINT}`;
+      }
+      
+      // 開発モードの場合、テストデータをフォームに設定
+      if (DEV_MODE) {
+        console.log('🧪 開発モード: テストデータを設定中...');
+        
+        // 各フィールドにテストデータを設定
+        if (document.getElementById('familyName')) {
+          document.getElementById('familyName').value = TEST_DATA.familyName;
+          document.getElementById('familyName').placeholder = TEST_DATA.familyName;
+        }
+        if (document.getElementById('firstName')) {
+          document.getElementById('firstName').value = TEST_DATA.firstName;
+          document.getElementById('firstName').placeholder = TEST_DATA.firstName;
+        }
+        if (document.getElementById('familyNameKana')) {
+          document.getElementById('familyNameKana').value = TEST_DATA.familyNameKana;
+          document.getElementById('familyNameKana').placeholder = TEST_DATA.familyNameKana;
+        }
+        if (document.getElementById('firstNameKana')) {
+          document.getElementById('firstNameKana').value = TEST_DATA.firstNameKana;
+          document.getElementById('firstNameKana').placeholder = TEST_DATA.firstNameKana;
+        }
+        if (document.getElementById('school')) {
+          document.getElementById('school').value = TEST_DATA.school;
+          document.getElementById('school').placeholder = TEST_DATA.school;
+        }
+        if (document.getElementById('grade')) {
+          document.getElementById('grade').value = TEST_DATA.grade;
+        }
+        
+        console.log('✅ テストデータ設定完了:', TEST_DATA);
+      } else {
+        console.log('📝 本番モード: プレースホルダーのみ表示');
+        // プレースホルダーを設定
+        if (document.getElementById('familyName')) {
+          document.getElementById('familyName').placeholder = '山田';
+        }
+        if (document.getElementById('firstName')) {
+          document.getElementById('firstName').placeholder = '花子';
+        }
+        if (document.getElementById('familyNameKana')) {
+          document.getElementById('familyNameKana').placeholder = 'ヤマダ';
+        }
+        if (document.getElementById('firstNameKana')) {
+          document.getElementById('firstNameKana').placeholder = 'ハナコ';
+        }
+        if (document.getElementById('school')) {
+          document.getElementById('school').placeholder = '〇〇高校';
+        }
       }
     });
 

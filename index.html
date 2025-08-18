@@ -191,7 +191,7 @@
       // バージョン情報を表示
       const versionElement = document.getElementById('versionInfo');
       if (versionElement) {
-        versionElement.textContent = `v1.0.1 | デプロイ: 2025/8/16 15:45 | ${new Date().toLocaleDateString('ja-JP')}`;
+        versionElement.textContent = `v1.0.2 | デプロイ: 2025/8/18 16:30 | ${new Date().toLocaleDateString('ja-JP')}`;
       }
       
       // 開発モードの場合、テストデータをフォームに設定
@@ -299,12 +299,31 @@
 
         let debugLog = '';
         debugLog += '[送信データ]\n' + JSON.stringify(body, null, 2) + '\n\n';
+        debugLog += '[APIエンドポイント]\n' + API_ENDPOINT + '\n\n';
+        debugLog += '[リクエストヘッダー]\n' + JSON.stringify({ 'Content-Type': 'application/json' }, null, 2) + '\n\n';
 
-        const response = await fetch(API_ENDPOINT, {
-          method : 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body   : JSON.stringify(body)
-        });
+        console.log('🌐 fetch開始:', API_ENDPOINT);
+        console.log('📤 送信データ:', body);
+        
+        let response;
+        try {
+          response = await fetch(API_ENDPOINT, {
+            method : 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body   : JSON.stringify(body)
+          });
+          console.log('✅ fetch成功 - ステータス:', response.status);
+        } catch (fetchError) {
+          console.error('❌ fetch失敗:', fetchError);
+          debugLog += '[fetchエラー詳細]\n';
+          debugLog += '・エラー名: ' + fetchError.name + '\n';
+          debugLog += '・エラーメッセージ: ' + fetchError.message + '\n';
+          debugLog += '・エラータイプ: ' + fetchError.constructor?.name + '\n';
+          if (fetchError.cause) {
+            debugLog += '・原因: ' + fetchError.cause + '\n';
+          }
+          throw fetchError;
+        }
 
         const endTime = Date.now();
         const elapsed = ((endTime - startTime) / 1000).toFixed(2);
@@ -317,11 +336,21 @@
         try {
           responseText = await response.text();
           debugLog += '[レスポンス内容]\n' + responseText + '\n';
+          console.log('📥 レスポンス内容:', responseText);
         } catch (e) {
           debugLog += '[レスポンス内容取得エラー]\n' + e.message + '\n';
+          console.error('❌ レスポンス内容取得エラー:', e);
         }
 
         if (!response.ok) {
+          const errorInfo = {
+            status: response.status,
+            statusText: response.statusText,
+            responseText: responseText,
+            url: API_ENDPOINT
+          };
+          console.error('❌ HTTPエラー:', errorInfo);
+          debugLog += '[HTTPエラー詳細]\n' + JSON.stringify(errorInfo, null, 2) + '\n';
           throw new Error(`API エラー: ${response.status} - ${responseText}`);
         }
 
@@ -385,14 +414,49 @@
         }, 3000);
       } catch(err){
         let errorMessage = '送信に失敗しました。\n\n';
-        errorMessage += '[エラー名]\n' + (err.name || '') + '\n';
-        errorMessage += '[エラーメッセージ]\n' + (err.message || '') + '\n';
-        errorMessage += '[エラースタック]\n' + (err.stack || '') + '\n\n';
-        if (typeof debugLog !== 'undefined') {
-          errorMessage += debugLog;
+        errorMessage += '[エラー名]\n' + (err.name || 'Unknown Error') + '\n';
+        errorMessage += '[エラーメッセージ]\n' + (err.message || 'No error message') + '\n';
+        
+        // iPhoneでもエラースタックを表示できるように改善
+        if (err.stack) {
+          errorMessage += '[エラースタック]\n' + err.stack + '\n';
+        } else {
+          errorMessage += '[エラースタック]\nスタックトレースが利用できません\n';
         }
+        
+        // 追加のエラー情報
+        errorMessage += '[エラー詳細]\n';
+        errorMessage += '・タイプ: ' + (typeof err) + '\n';
+        errorMessage += '・コンストラクタ: ' + (err.constructor?.name || 'Unknown') + '\n';
+        errorMessage += '・プロトタイプ: ' + (Object.getPrototypeOf(err)?.constructor?.name || 'Unknown') + '\n';
+        
+        // ネットワークエラーの場合の詳細情報
+        if (err.name === 'TypeError' && err.message.includes('fetch')) {
+          errorMessage += '・ネットワークエラーが発生しています\n';
+          errorMessage += '・CORS設定を確認してください\n';
+          errorMessage += '・APIエンドポイント: ' + API_ENDPOINT + '\n';
+        }
+        
+        if (typeof debugLog !== 'undefined') {
+          errorMessage += '\n[デバッグログ]\n' + debugLog;
+        }
+        
         errorMessage += '\n時間をおいて再度お試しください。';
+        
+        // アラートで表示（iPhoneでも確実に表示される）
         alert(errorMessage);
+        
+        // コンソールにも詳細ログを出力
+        console.error('詳細エラー情報:', {
+          name: err.name,
+          message: err.message,
+          stack: err.stack,
+          constructor: err.constructor?.name,
+          prototype: Object.getPrototypeOf(err)?.constructor?.name,
+          type: typeof err,
+          debugLog: debugLog
+        });
+        
         button.disabled = false;
       }
       spinner.style.display = 'none'; // スピナー非表示

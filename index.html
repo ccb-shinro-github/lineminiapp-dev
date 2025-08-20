@@ -280,8 +280,11 @@
     const completeMessage = document.getElementById('completeMessage');
     const completeDetail = document.getElementById('completeDetail');
     const completeOkBtn = document.getElementById('completeOkBtn');
+    let isSubmitting = false;
     form.addEventListener('submit', async e => {
       e.preventDefault();
+      if (isSubmitting) return; // 二重送信防止
+      isSubmitting = true;
       button.disabled = true;
       spinner.style.display = 'flex'; // スピナー表示
       const startTime = Date.now();
@@ -399,19 +402,7 @@
           completeDetail.textContent = 'API応答時間: ' + elapsed + '秒\n予約が完了しました。（メッセージ送信エラー: ' + messageError.message + '）';
         }
         
-        // 3秒後にLIFFアプリを自動で閉じる（メッセージ送信時間を考慮）
-        setTimeout(() => {
-          try {
-            if (typeof liff !== 'undefined' && liff.isInClient()) {
-              liff.closeWindow();
-            } else {
-              // LIFF環境でない場合の代替処理
-              console.log('LIFF環境ではありません');
-            }
-          } catch (error) {
-            console.log('ウィンドウクローズエラー:', error);
-          }
-        }, 3000);
+        // 自動クローズはしない（OKボタンで閉じる）
       } catch(err){
         let errorMessage = '送信に失敗しました。\n\n';
         errorMessage += '[エラー名]\n' + (err.name || 'Unknown Error') + '\n';
@@ -460,6 +451,7 @@
         button.disabled = false;
       }
       spinner.style.display = 'none'; // スピナー非表示
+      isSubmitting = false;
     });
     completeOkBtn.addEventListener('click', () => {
       try {

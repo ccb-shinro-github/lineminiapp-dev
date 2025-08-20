@@ -262,6 +262,149 @@
       }
       hidden.value=code||'';
     }
+
+    /* ============================
+     *  送信処理・LIFF初期化
+     * ============================ */
+    const ENABLE_TEST_MODE = false;
+    let liffReady = false;
+
+    async function initializeLiff(){
+      try{
+        await liff.init({ liffId: LIFF_ID });
+        liffReady = true;
+        const submitBtn = document.getElementById('submitBtn');
+        if(submitBtn){
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = 'プライバシーポリシーに<br>同意して予約する';
+        }
+      }catch(error){
+        console.log('LIFF初期化エラー:', error);
+        liffReady = false;
+        // LIFF未初期化でも送信は可能にする
+        const submitBtn = document.getElementById('submitBtn');
+        if(submitBtn){
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = 'プライバシーポリシーに<br>同意して予約する';
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const submitBtn = document.getElementById('submitBtn');
+      if(submitBtn){
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'LIFF初期化中...<br>お待ちください';
+      }
+      initializeLiff();
+
+      // URLパラメータ token を hidden で付与
+      const params = new URLSearchParams(location.search);
+      const token = params.get('tok') ?? '';
+      const tokenInput = document.createElement('input');
+      tokenInput.type='hidden';
+      tokenInput.name='token';
+      tokenInput.value=token;
+      document.getElementById('reserveForm').appendChild(tokenInput);
+
+      // デバッグ表示
+      const apiInfo = document.getElementById('apiEndpointInfo');
+      if(apiInfo){ apiInfo.textContent = `POST ${API_ENDPOINT}`; }
+      const verInfo = document.getElementById('versionInfo');
+      if(verInfo){ verInfo.textContent = 'v20250820A'; }
+    });
+
+    const form = document.getElementById('reserveForm');
+    const submitButton = document.getElementById('submitBtn');
+    const spinner = document.getElementById('loadingSpinner');
+    const completeMessage = document.getElementById('completeMessage');
+    const completeDetail = document.getElementById('completeDetail');
+    const completeOkBtn = document.getElementById('completeOkBtn');
+
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      if(submitButton){ submitButton.disabled = true; }
+      if(spinner){ spinner.style.display = 'flex'; }
+      const startTime = Date.now();
+      try{
+        const family = document.getElementById('familyName')?.value?.trim() || '';
+        const first  = document.getElementById('firstName')?.value?.trim() || '';
+        const familyKana = document.getElementById('familyNameKana')?.value?.trim() || '';
+        const firstKana  = document.getElementById('firstNameKana')?.value?.trim() || '';
+        const school = document.getElementById('school')?.value?.trim() || '';
+        const grade  = document.getElementById('grade')?.value || '';
+        const tokenHidden = (document.querySelector('input[name="token"]')||{value:''}).value;
+
+        const body = {
+          familyName: family,
+          firstName: first,
+          familyNameKana: familyKana,
+          firstNameKana: firstKana,
+          school,
+          grade,
+          token: tokenHidden
+        };
+
+        const response = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        const elapsed = ((Date.now() - startTime)/1000).toFixed(2);
+
+        let responseText = '';
+        try{ responseText = await response.text(); }catch(_){/* noop */}
+        if(!response.ok){ throw new Error(`API エラー: ${response.status} - ${responseText}`); }
+
+        if(completeDetail){ completeDetail.textContent = `API応答時間: ${elapsed}秒\n予約が完了しました。トーク画面にメッセージを送信中...`; }
+        if(completeMessage){ completeMessage.style.display = 'flex'; }
+
+        try{
+          if(liffReady && liff.isReady && liff.isReady()){
+            if(liff.isInClient()){
+              await liff.sendMessages([
+                { type:'text', text:`🎉 予約が完了しました！\n\n📝 予約内容\n・姓: ${family}\n・名: ${first}\n・学校名: ${school}\n・学年: ${grade}年\n\n⏱️ API応答時間: ${elapsed}秒\n\nありがとうございました！` }
+              ]);
+              if(completeDetail){ completeDetail.textContent = `API応答時間: ${elapsed}秒\nトーク画面にメッセージを送信しました。アプリを自動で閉じます...`; }
+            }else{
+              if(completeDetail){ completeDetail.textContent = `API応答時間: ${elapsed}秒\n予約が完了しました。（LINEクライアント外環境）`; }
+            }
+          }else{
+            if(completeDetail){ completeDetail.textContent = `API応答時間: ${elapsed}秒\n予約が完了しました。（LIFF未初期化）`; }
+          }
+        }catch(messageError){
+          console.log('メッセージ送信エラー:', messageError);
+          if(completeDetail){ completeDetail.textContent = `API応答時間: ${elapsed}秒\n予約が完了しました。（メッセージ送信エラー: ${messageError.message}）`; }
+        }
+
+        setTimeout(()=>{
+          try{
+            if(liffReady && liff.isInClient && liff.isInClient()){
+              liff.closeWindow();
+            }
+          }catch(_e){/* noop */}
+        },3000);
+      }catch(err){
+        alert(`送信に失敗しました。\n\n[エラーメッセージ]\n${err.message || ''}\n\n時間をおいて再度お試しください。`);
+        if(submitButton){ submitButton.disabled = false; }
+      }finally{
+        if(spinner){ spinner.style.display = 'none'; }
+      }
+    });
+
+    completeOkBtn.addEventListener('click', ()=>{
+      try{
+        if(liffReady && liff.isInClient && liff.isInClient()){
+          liff.closeWindow();
+        }else{
+          if(completeMessage){ completeMessage.style.display = 'none'; }
+        }
+      }catch(error){
+        console.log('ウィンドウクローズエラー:', error);
+        if(completeMessage){ completeMessage.style.display = 'none'; }
+      }
+    });
   </script>
 </body>
 </html>

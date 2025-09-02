@@ -357,7 +357,8 @@
           throw new Error(`API エラー: ${response.status} - ${responseText}`);
         }
 
-        completeDetail.textContent = 'API応答時間: ' + elapsed + '秒\n予約が完了しました。トーク画面にメッセージを送信中...';
+        //completeDetail.textContent = 'API応答時間: ' + elapsed + '秒\n予約が完了しました。トーク画面にメッセージを送信中...';
+        completeDetail.textContent = '';
         completeMessage.style.display = 'flex';
         
         // LINEトーク画面にメッセージを送信
@@ -394,8 +395,8 @@
               }
             }
           } else {
-            console.log('LIFF未初期化またはSDK未読み込み');
-            completeDetail.textContent = 'API応答時間: ' + elapsed + '秒\n予約が完了しました。（LIFF未初期化）';
+            //console.log('LIFF未初期化またはSDK未読み込み');
+            //completeDetail.textContent = 'API応答時間: ' + elapsed + '秒\n予約が完了しました。（LIFF未初期化）';
           }
         } catch (messageError) {
           console.log('メッセージ送信エラー:', messageError);
